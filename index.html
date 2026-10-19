@@ -40,6 +40,9 @@ body { background: var(--bg); color: var(--ink); font-family: var(--f-body); fon
 /* 4px at the sides, not 0: focus rings sit up to 3px outside their boxes and the iframe edge would clip them */
 .embed .wrap { max-width: none; padding: 4px 4px 24px; }
 .embed .wrap > header { display: none; }
+.embed.fits, .embed.fits body { overflow: hidden; }
+/* no iOS text inflation: an inflated page would be taller than the height it reports */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 h1, h2, h3 { font-family: var(--f-display); font-weight: 500; letter-spacing: -0.025em; text-wrap: balance; margin: 0; }
 h1 { font-size: clamp(30px, 4.5vw, 44px); line-height: 1.05; color: var(--brand); }
 h2 { font-size: 24px; line-height: 1.15; }
@@ -553,9 +556,16 @@ tr.total td { font-weight: 600; border-bottom: none; }
   // sizes the iframe to fit, so it never needs an inner scrollbar
   if (document.documentElement.classList.contains("embed") && window.parent !== window) {
     const wrap = document.querySelector(".wrap");
-    const report = () => parent.postMessage({ brexitHeight: Math.ceil(wrap.getBoundingClientRect().height) }, "*");
+    const height = () => Math.ceil(Math.max(wrap.getBoundingClientRect().height, document.body.scrollHeight));
+    // once the frame is within 2px of the page it stops scrolling itself: on iPhones a frame
+    // that overflows by even a pixel takes the swipe instead of the host page
+    const fit = () => document.documentElement.classList.toggle("fits", window.innerHeight >= height() - 2);
+    const report = () => { parent.postMessage({ brexitHeight: height() }, "*"); fit(); };
     new ResizeObserver(report).observe(wrap);
     window.addEventListener("message", (e) => { if (e.data === "brexit-height") report(); });
+    window.addEventListener("load", report);
+    window.addEventListener("resize", fit);
+    if (document.fonts) document.fonts.ready.then(report);
   }
   // redraw when the trend charts change width, since their viewBox follows it
   let chartW = 0, redraw = 0;
