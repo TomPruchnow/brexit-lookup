@@ -88,6 +88,13 @@ p { margin: 0; }
 .headline b { font-weight: 600; }
 .partof { font-size: 14px; color: var(--muted); }
 .headline .v { color: var(--vote); } .headline .o { color: var(--opinion); }
+/* the summary's breakdown: one line per step of the bridge, in body type under the headline figures */
+.steps { list-style: none; margin: 14px 0 0; padding: 12px 0 0; border-top: 1px solid var(--rule); display: grid; gap: 8px;
+  font-family: var(--f-body); font-size: 15px; line-height: 1.5; }
+.steps li { display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: baseline; }
+.steps .k { font-weight: 600; }
+.steps small { color: var(--muted); font-size: 13px; white-space: nowrap; }
+@media (max-width: 480px) { .steps li { grid-template-columns: 1fr; gap: 0; } }
 
 /* charts */
 .charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
@@ -95,6 +102,7 @@ p { margin: 0; }
 @media (max-width: 760px) { .charts { grid-template-columns: 1fr; } }
 .panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 0; padding: 16px; display: grid; gap: 8px; min-width: 0; }
 .panel p { font-size: 13px; color: var(--muted); }
+.charts h3 { font-size: 18px; }
 svg { display: block; width: 100%; height: auto; overflow: visible; }
 svg text { fill: var(--muted); font-family: var(--f-body); font-size: 11px; }
 .howto p { font-size: 16px; color: var(--muted); }
@@ -163,7 +171,7 @@ tr.total td { font-weight: 600; border-bottom: none; }
     <div class="eyebrow" id="a-region">Loading</div>
     <div class="name-row"><h2 id="a-name">&nbsp;</h2><button type="button" class="copy" id="copy-link">Copy link</button></div>
     <p class="partof" id="a-partof" hidden></p>
-    <p class="headline" id="a-headline"></p>
+    <div class="headline" id="a-headline"></div>
     <div id="a-flag"></div>
   </section>
 
@@ -181,7 +189,6 @@ tr.total td { font-weight: 600; border-bottom: none; }
       <div class="panel">
         <h3>Change in percentage points, 2016 to 2025</h3>
         <div class="tablewrap"><table id="tbl"></table></div>
-        <p id="newvoters"></p>
       </div>
     </div>
   </section>
@@ -401,8 +408,8 @@ tr.total td { font-weight: 600; border-bottom: none; }
     const lastV = series.vote[series.vote.length - 1], lastO = series.opinion[series.opinion.length - 1];
     const ly = [Y(lastV[1]), Y(lastO[1])];
     if (Math.abs(ly[0] - ly[1]) < 13) { const mid = (ly[0] + ly[1]) / 2; ly[0] = mid - 7; ly[1] = mid + 7; }
-    el("text", { x: X(2025) - 8, y: ly[0] - 8, "text-anchor": "end", style: "fill:var(--vote);font-weight:600" }, svg).textContent = fmt(lastV[1]) + "%";
-    el("text", { x: X(2025) - 8, y: ly[1] + 16, "text-anchor": "end", style: "fill:var(--opinion);font-weight:600" }, svg).textContent = fmt(lastO[1]) + "%";
+    el("text", { x: X(2025) - 8, y: ly[0] - 8, "text-anchor": "end", style: "fill:var(--vote);font-weight:600;font-size:13px" }, svg).textContent = fmt(lastV[1]) + "%";
+    el("text", { x: X(2025) - 8, y: ly[1] + 18, "text-anchor": "end", style: "fill:var(--opinion);font-weight:600;font-size:13px" }, svg).textContent = fmt(lastO[1]) + "%";
     // actual 2016
     const ax = X(2016), ay = Y(g.actual2016), s = 5.5;
     el("polygon", { points: `${ax},${ay - s} ${ax + s},${ay} ${ax},${ay + s} ${ax - s},${ay}`, fill: "var(--truth)", stroke: "var(--surface)", "stroke-width": 1.2 }, svg);
@@ -494,15 +501,18 @@ tr.total td { font-weight: 600; border-bottom: none; }
     }
     $("a-name").textContent = g.name;
     const v16 = g.actual2016, now = g.everyone.opinion[3], keep = g.restricted.vote[2][1], nv = g.new_voters;
-    // Entry is negative in every area (new voters are always less stay-out than the 2016 electorate)
+    // Total is negative in every area, so "a fall"; Exit can be slightly positive, so the steps show signed values
+    const dc = g.decomp;
+    const step = (name, s, text) => `<li><span class="k">${name} <span class="num">${pp(s[0])}</span></span><span>${text}</span></li>`;
     $("a-headline").innerHTML =
-      `In 2016, ${it.kind === "pcon" ? "an estimated " : ""}<b class="v num">${fmt(v16, 1)}%</b> in ${esc(g.name)} voted Leave. ` +
+      `<p>In 2016, ${it.kind === "pcon" ? "an estimated " : ""}<b class="v num">${fmt(v16, 1)}%</b> in ${esc(g.name)} voted Leave. ` +
       `Today an estimated <b class="o num">${fmt(now[1])}%</b> would vote to stay out ` +
-      `<span class="num" style="color:var(--muted);font-size:0.85em">(90% range: ${fmt(now[2])}–${fmt(now[3])}%)</span>. ` +
-      `Had no one changed their mind, Leave among those who could vote in 2016 would now be about <b class="num">${fmt(keep)}%</b>. ` +
-      `Young people who have come of age since 2016 are <b class="num">${fmt(nv.share)}%</b> of today's electorate, and an estimated ` +
-      `<span class="num">${fmt(nv.opinion[0])}%</span> of them would vote to stay out, which on its own lowers today's figure by ` +
-      `<span class="num">${fmt(Math.abs(g.decomp.entry[0]), 1)}</span> points.`;
+      `<span class="num" style="color:var(--muted);font-size:0.85em">(90% range: ${fmt(now[2])}–${fmt(now[3])}%)</span>, ` +
+      `a fall of <span class="num">${fmt(-dc.total[0], 1)}</span> points:</p><ul class="steps">` +
+      step("Exit", dc.exit, `The 2016 electorate has changed, mostly through deaths. Had no one changed their mind, Leave would now be about <b class="num">${fmt(keep)}%</b>.`) +
+      step("Opinion", dc.opinion, `People who could vote in 2016 giving a different answer today. <small class="num">90% range: ${pp(dc.opinion[1])} to ${pp(dc.opinion[2])}</small>`) +
+      step("Entry", dc.entry, `Young people who have come of age since 2016 are <b class="num">${fmt(nv.share)}%</b> of today's electorate. An estimated <b class="num">${fmt(nv.opinion[0])}%</b> of them would vote to stay out, against <span class="num">${fmt(nv.elig2016_opinion[0])}%</span> of those who could vote in 2016.`) +
+      `</ul>`;
     const flagged = FLAGGED.has(it.key) || (it.kind === "pcon" && g.councils.some((c) => FLAGGED.has(c.code)));
     $("a-flag").innerHTML = flagged
       ? `<p class="flag">Provisional: a coding error swapped St Albans' and East Hertfordshire's 2011 census data. The data is corrected, but the 2016 model has not yet been re-estimated, so the change in opinion for these two councils${it.kind === "pcon" ? ", and for constituencies in them," : ""} may be off by a few points.</p>` : "";
@@ -515,9 +525,7 @@ tr.total td { font-weight: 600; border-bottom: none; }
     bridge($("chart-w"), g);
     table(it, g);
     const bias = nv.share / 100 * YOUNG_SHIFT;
-    $("young-bias").textContent = `In ${g.name}, this may understate the blue estimate for 2025 by up to about ${fmt(bias, 1)} ${bias >= 0.95 && bias < 1.05 ? "point" : "points"}.`;
-    $("newvoters").innerHTML = `<span class="num">${fmt(nv.share)}%</span> of today's electorate were too young to vote in 2016. An estimated <b class="num">${fmt(nv.opinion[0])}%</b> of them would vote to stay out, against <span class="num">${fmt(nv.elig2016_opinion[0])}%</span> of those who could vote in 2016.`;
-  }
+    $("young-bias").textContent = `In ${g.name}, this may understate the blue estimate for 2025 by up to about ${fmt(bias, 1)} ${bias >= 0.95 && bias < 1.05 ? "point" : "points"}.`;  }
 
   function fromHash() {
     const h = (location.hash || "").slice(1);
@@ -540,6 +548,14 @@ tr.total td { font-weight: 600; border-bottom: none; }
   q.addEventListener("blur", () => setTimeout(() => renderResults([]), 100));
   $("copy-link").addEventListener("click", copyLink);
   window.addEventListener("hashchange", () => { const it = fromHash(); if (it) show(it); });
+  // embedded: report the page's height to the host page, whose iframe onload handler
+  // sizes the iframe to fit, so it never needs an inner scrollbar
+  if (document.documentElement.classList.contains("embed") && window.parent !== window) {
+    const wrap = document.querySelector(".wrap");
+    const report = () => parent.postMessage({ brexitHeight: Math.ceil(wrap.getBoundingClientRect().height) }, "*");
+    new ResizeObserver(report).observe(wrap);
+    window.addEventListener("message", (e) => { if (e.data === "brexit-height") report(); });
+  }
   // redraw when the trend charts change width, since their viewBox follows it
   let chartW = 0, redraw = 0;
   window.addEventListener("resize", () => {
