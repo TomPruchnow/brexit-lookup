@@ -1,0 +1,491 @@
+<title>Replacement Tracker</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,650&family=Public+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one reading column; search on top, the area's two trend charts side by side, then the bridge from 2016 to today */
+:root {
+  --bg: #f4f6f9;
+  --surface: #ffffff;
+  --ink: #16213a;
+  --muted: #5a6479;
+  --rule: #d8dde6;
+  --grid: #e7eaf0;
+  --vote: #1d3566;
+  --vote-band: rgba(29, 53, 102, 0.14);
+  --opinion: #b97610;
+  --opinion-band: rgba(201, 135, 31, 0.20);
+  --truth: #2f6f6a;
+  --compare: #9aa3b5;
+  --down: #1d3566;
+  --up: #b5452c;
+  --focus: #2f6f6a;
+  --f-display: "Literata", Georgia, "Times New Roman", serif;
+  --f-body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f141d; --surface: #171e2b; --ink: #e5e9f0; --muted: #9ba5b8; --rule: #2b3445; --grid: #222b3a;
+    --vote: #93b2ea; --vote-band: rgba(147, 178, 234, 0.16); --opinion: #e5aa52; --opinion-band: rgba(229, 170, 82, 0.18);
+    --truth: #63b8ae; --compare: #5d677b; --down: #93b2ea; --up: #e4806a; --focus: #63b8ae; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f141d; --surface: #171e2b; --ink: #e5e9f0; --muted: #9ba5b8; --rule: #2b3445; --grid: #222b3a;
+  --vote: #93b2ea; --vote-band: rgba(147, 178, 234, 0.16); --opinion: #e5aa52; --opinion-band: rgba(229, 170, 82, 0.18);
+  --truth: #63b8ae; --compare: #5d677b; --down: #93b2ea; --up: #e4806a; --focus: #63b8ae; color-scheme: dark;
+}
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 1040px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 56px; display: grid; gap: 28px; }
+h1, h2, h3 { font-family: var(--f-display); font-weight: 650; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(26px, 4vw, 36px); letter-spacing: -0.01em; }
+h2 { font-size: 22px; }
+h3 { font-size: 16px; font-family: var(--f-body); font-weight: 600; }
+p { margin: 0; max-width: 66ch; }
+.eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+.lede { color: var(--muted); font-size: 16px; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* search */
+.search { position: relative; max-width: 520px; display: grid; gap: 8px; }
+.search label { font-weight: 600; font-size: 14px; }
+.search input {
+  font: inherit; font-size: 17px; padding: 12px 14px; border-radius: 8px; border: 1px solid var(--rule);
+  background: var(--surface); color: var(--ink); width: 100%; box-sizing: border-box;
+}
+.search input:focus { outline: 2px solid var(--focus); outline-offset: 1px; }
+.results {
+  position: absolute; top: 100%; left: 0; right: 0; z-index: 5; margin: 4px 0 0; padding: 4px; list-style: none;
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  max-height: 320px; overflow-y: auto;
+}
+.results li { padding: 8px 10px; border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; gap: 12px; }
+.results li small { color: var(--muted); }
+.results li[aria-selected="true"], .results li:hover { background: var(--grid); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; font-size: 13px; color: var(--muted); align-items: center; }
+.chips button {
+  font: inherit; font-size: 13px; color: var(--ink); background: transparent; border: 1px solid var(--rule);
+  border-radius: 999px; padding: 3px 10px; cursor: pointer;
+}
+.chips button:hover { border-color: var(--muted); }
+.chips button:focus-visible { outline: 2px solid var(--focus); }
+
+/* area summary */
+.area { display: grid; gap: 10px; border-top: 1px solid var(--rule); padding-top: 24px; }
+.headline { font-family: var(--f-display); font-size: clamp(19px, 2.4vw, 23px); line-height: 1.4; font-weight: 500; max-width: 46ch; }
+.headline b { font-weight: 650; }
+.partof { font-size: 14px; color: var(--muted); }
+.headline .v { color: var(--vote); } .headline .o { color: var(--opinion); }
+
+/* charts */
+.charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+.panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 16px; display: grid; gap: 8px; min-width: 0; }
+.panel p { font-size: 13px; color: var(--muted); }
+svg { display: block; width: 100%; height: auto; overflow: visible; }
+svg text { fill: var(--muted); font-family: var(--f-body); font-size: 11px; }
+.howto p { font-size: 14px; color: var(--muted); max-width: 80ch; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.key-line { width: 22px; height: 0; border-top: 2.5px solid var(--vote); }
+.key-line.o { border-top: 2.5px dashed var(--opinion); }
+.key-line.c { border-top: 1.5px solid var(--compare); }
+.key-band { width: 16px; height: 10px; background: var(--opinion-band); border-radius: 2px; }
+.key-dia { width: 9px; height: 9px; background: var(--truth); transform: rotate(45deg); }
+.toggle { font-size: 13px; display: inline-flex; gap: 6px; align-items: center; color: var(--muted); }
+.toggle select { font: inherit; font-size: 13px; color: var(--ink); background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 2px 6px; }
+
+/* bridge */
+.bridge { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 760px) { .bridge { grid-template-columns: 1fr; } }
+.terms { display: grid; gap: 12px; }
+.term { display: grid; grid-template-columns: 76px 1fr; gap: 10px; align-items: baseline; }
+.term b { font-size: 14px; }
+.term span { font-size: 13.5px; color: var(--muted); }
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 12.5px; table-layout: fixed; }
+th, td { text-align: right; padding: 6px 5px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+th:first-child, td:first-child { width: 4.8em; }
+th:first-child, td:first-child { text-align: left; }
+thead th { font-size: 11px; color: var(--muted); font-weight: 600; letter-spacing: 0.02em; line-height: 1.3; white-space: normal; vertical-align: bottom; overflow-wrap: anywhere; border-bottom: 1px solid var(--rule); }
+td small { color: var(--muted); font-size: 10.5px; display: block; }
+tr.total td { font-weight: 600; border-bottom: none; }
+.notes { border-top: 1px solid var(--rule); padding-top: 20px; display: grid; gap: 10px; font-size: 13.5px; color: var(--muted); }
+.notes p { max-width: 80ch; }
+.flag { border: 1px solid var(--up); color: var(--ink); border-radius: 8px; padding: 10px 12px; font-size: 13.5px; }
+@media (prefers-reduced-motion: no-preference) { .area { transition: opacity 0.2s; } }
+</style>
+
+<div class="wrap">
+  <header style="display:grid; gap:10px">
+    <div class="eyebrow">Brexit, ten years on</div>
+    <h1>Replacement Tracker</h1>
+    <p class="lede">How support for Brexit has changed in your area since the 2016 referendum, and how much of that change comes from people changing their minds rather than from changes in who makes up the electorate.</p>
+  </header>
+
+  <div class="search">
+    <label for="q">Find a council or constituency</label>
+    <input id="q" type="search" autocomplete="off" placeholder="Type a council or constituency, e.g. Wakefield" role="combobox" aria-expanded="false" aria-controls="results" aria-autocomplete="list">
+    <ul id="results" class="results" role="listbox" hidden></ul>
+    <div class="chips" id="chips"><span>Try</span></div>
+  </div>
+
+  <section class="area" id="area" aria-live="polite">
+    <div class="eyebrow" id="a-region">Loading</div>
+    <h2 id="a-name">&nbsp;</h2>
+    <p class="partof" id="a-partof" hidden></p>
+    <p class="headline" id="a-headline"></p>
+    <div id="a-flag"></div>
+  </section>
+
+  <section style="display:grid; gap:12px">
+    <div style="display:flex; flex-wrap:wrap; gap:10px 24px; align-items:center; justify-content:space-between">
+      <div class="legend">
+        <span><i class="key-line"></i>2016 model: how people voted (Leave)</span>
+        <span><i class="key-line o"></i>Current model: what people think today (stay out)</span>
+        <span><i class="key-band"></i>90% range for today's opinion</span>
+        <span><i class="key-dia"></i>Official 2016 result</span>
+        <span id="cmp-key"><i class="key-line c"></i><span id="cmp-key-label">England and Wales</span></span>
+      </div>
+      <label class="toggle" for="cmp">Compare with
+        <select id="cmp"><option value="region">its region</option><option value="national" selected>England and Wales</option><option value="none">nothing</option></select>
+      </label>
+    </div>
+    <div class="howto">
+      <p>Both lines show predicted shares among decided voters. Along each line, the prediction for any given kind of voter stays the same, so the line moves only because the electorate changes: older voters leaving it, younger ones joining, people moving area or leaving the UK, and changes in circumstances such as buying a home. The gap between the two lines is persuasion: the same people, in the same year, giving a different answer.</p>
+    </div>
+    <div class="charts">
+      <div class="panel">
+        <h3>Restricted: people who could vote in 2016</h3>
+        <p>Only people who were 18 or older in 2016, so the lines move mainly through mortality.</p>
+        <svg id="chart-r" viewBox="0 0 440 280" role="img" aria-label="Trend chart, people eligible in 2016"></svg>
+      </div>
+      <div class="panel">
+        <h3>Everyone: all adults in the year shown</h3>
+        <p>Since young people who came of age after 2016 could not vote in the referendum, the 2016 prediction model cannot tell us how they would have voted. Instead, we use their predicted current opinion for both lines. <span id="young-bias"></span></p>
+        <svg id="chart-e" viewBox="0 0 440 280" role="img" aria-label="Trend chart, everyone eligible"></svg>
+      </div>
+    </div>
+  </section>
+
+  <section style="display:grid; gap:14px">
+    <h2>From 2016 to today</h2>
+    <div class="bridge">
+      <div class="panel">
+        <svg id="chart-w" viewBox="0 0 520 260" role="img" aria-label="Change from 2016 to today, in three steps"></svg>
+        <div class="terms">
+          <div class="term"><b>Exit</b><span>Changes among people who could vote in 2016, at their 2016 opinions: mostly deaths, plus people moving area or leaving the UK and changes in their circumstances.</span></div>
+          <div class="term"><b>Opinion</b><span>Persuasion: the same people today, giving a different answer.</span></div>
+          <div class="term"><b>Entry</b><span>Young people who have turned 18 since 2016.</span></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>Change in percentage points, 2016 to 2025</h3>
+        <div class="tablewrap"><table id="tbl"></table></div>
+        <p id="newvoters"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="notes">
+    <h3 style="color:var(--ink)">About these estimates</h3>
+    <p>These are model estimates, not counts. We combine two large surveys of the same panel of voters (the British Election Study, just after the 2016 referendum and in May to June 2026) with population tables for each council built from the 2011 and 2021 censuses and the ONS mid-year estimates for 2016 and 2025. The 2016 model predicts how people voted; the current model predicts how they would vote in a referendum on rejoining the EU.</p>
+    <p>All shares are among decided voters. Including 2016 non-voters and today's undecided would lower them, but survey respondents tend not to admit they didn't vote, so the survey's non-voter share is far too low to model reliably.</p>
+    <p>Every area is anchored to its actual 2016 result. Our model's own 2016 estimate for a council can miss the count by several points, so we shift each area's figures until its 2016 estimate matches the real result, and carry the same shift forward. The later figures are therefore the 2016 count plus our estimated changes. This assumes that whatever made the model miss an area in 2016 still applies today.</p>
+    <p>Constituencies (2024 boundaries) are estimated from each constituency's own make-up in the 2021 census, through the same models. There are no constituency population figures for 2016 or 2025, so each constituency moves between 2016, 2021 and 2025 as its council does (or its councils, weighted by population). Two constituencies in the same council therefore have the same exit effect, but their opinion change and the effect of new voters reflect their own demographics. A constituency's share of new voters comes from its own share of 18 to 26 year olds in 2021, so seats with many students keep a high share every year. Constituencies are anchored to Chris Hanretty's estimates of the 2016 result, since official results were counted by council, not by constituency.</p>
+    <p>Ranges show the uncertainty in today's opinion: 90% credible intervals from the model. The other figures are the actual 2016 result and projections of how the population has changed, which we show without a range. The model's own range for them is about a point, but that leaves out errors in the population tables. Regional and national figures are much more reliable than those for single councils.</p>
+    <p>Sources: Electoral Commission, ONS Census 2011 and 2021, ONS mid-year population estimates, Annual Population Survey, British Election Study Internet Panel. <span id="built"></span></p>
+  </section>
+</div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const NS = "http://www.w3.org/2000/svg";
+  const FLAGGED = new Set(["E07000240", "E07000242"]);
+  // the youngest 2016 voters have moved about 8 points towards Rejoin since
+  // 2016 (BES); new voters would likely have moved as much, so using their
+  // current opinion on the blue line understates it by about their share of
+  // the electorate times 8 points
+  const YOUNG_SHIFT = 8;
+  const EXAMPLES = ["Wakefield", "Hackney", "Boston", "Cardiff", "Clacton", "Bristol Central"];
+  let D, index = [], current = null, active = -1;
+
+  const fmt = (v, d = 0) => v.toFixed(d);
+  const pp = (v) => (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v).toFixed(1);
+  const el = (tag, attrs = {}, parent) => {
+    const n = document.createElementNS(NS, tag);
+    for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+    if (parent) parent.appendChild(n);
+    return n;
+  };
+
+  // ---------- search ----------
+  function buildIndex() {
+    index = [
+      { kind: "national", key: "EW", name: D.national.name, sub: "" },
+      ...Object.keys(D.regions).map((r) => ({ kind: "region", key: r, name: r, sub: "Region" })),
+      ...D.areas.map((a) => ({ kind: "area", key: a.code, name: a.name, sub: "Council \u00b7 " + a.region })),
+      ...(D.constituencies || []).map((c) => ({ kind: "pcon", key: c.code, name: c.name, sub: "Constituency \u00b7 " + c.region }))
+    ];
+  }
+  const norm = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9 ]/g, " ");
+  function search(q) {
+    const n = norm(q).trim();
+    if (!n) return [];
+    const starts = [], contains = [];
+    for (const it of index) {
+      const s = norm(it.name);
+      if (s.startsWith(n)) starts.push(it); else if (s.includes(n)) contains.push(it);
+    }
+    return [...starts, ...contains].slice(0, 8);
+  }
+  function renderResults(list) {
+    const ul = $("results");
+    ul.innerHTML = "";
+    active = -1;
+    list.forEach((it, i) => {
+      const li = document.createElement("li");
+      li.id = "opt-" + i;
+      li.setAttribute("role", "option");
+      li.innerHTML = `<span></span><small></small>`;
+      li.firstChild.textContent = it.name;
+      li.lastChild.textContent = it.sub;
+      li.addEventListener("mousedown", (e) => { e.preventDefault(); choose(it); });
+      ul.appendChild(li);
+    });
+    ul.hidden = list.length === 0;
+    $("q").setAttribute("aria-expanded", String(list.length > 0));
+  }
+  function setActive(i) {
+    const items = [...$("results").children];
+    if (!items.length) return;
+    active = (i + items.length) % items.length;
+    items.forEach((li, j) => li.setAttribute("aria-selected", String(j === active)));
+    $("q").setAttribute("aria-activedescendant", items[active].id);
+    items[active].scrollIntoView({ block: "nearest" });
+  }
+  function choose(it) {
+    $("q").value = "";
+    renderResults([]);
+    show(it);
+    try { history.replaceState(null, "", "#" + (it.kind === "region" ? it.key.replace(/[^A-Za-z]/g, "") : it.key)); } catch (e) {}
+  }
+
+  // ---------- data access ----------
+  function geo(it) {
+    if (it.kind === "national") return D.national;
+    if (it.kind === "region") return D.regions[it.key];
+    if (it.kind === "pcon") return D.constituencies.find((c) => c.code === it.key);
+    return D.areas.find((a) => a.code === it.key);
+  }
+  function comparison(it) {
+    const mode = $("cmp").value;
+    if (mode === "none") return null;
+    if (mode === "region" && (it.kind === "area" || it.kind === "pcon")) return D.regions[geo(it).region];
+    if (it.kind === "national") return null;
+    return D.national;
+  }
+
+  // ---------- trend chart ----------
+  function trend(svg, g, cmp, which, domain) {
+    svg.innerHTML = "";
+    const W = 440, H = 280, m = { l: 40, r: 14, t: 12, b: 28 };
+    const years = which === "everyone" ? [2011, 2016, 2021, 2025] : [2016, 2021, 2025];
+    const x0 = years[0] - 0.8, x1 = 2025.8;
+    const X = (yr) => m.l + (yr - x0) / (x1 - x0) * (W - m.l - m.r);
+    const Y = (v) => m.t + (domain[1] - v) / (domain[1] - domain[0]) * (H - m.t - m.b);
+    for (let v = domain[0]; v <= domain[1]; v += 10) {
+      el("line", { x1: m.l, x2: W - m.r, y1: Y(v), y2: Y(v), stroke: "var(--grid)", "stroke-width": 1 }, svg);
+      el("text", { x: m.l - 6, y: Y(v) + 4, "text-anchor": "end" }, svg).textContent = v + "%";
+    }
+    years.forEach((yr) => {
+      el("text", { x: X(yr), y: H - 8, "text-anchor": "middle" }, svg).textContent = yr;
+    });
+    const series = g[which];
+    const draw = (pts, color, band, dash, width) => {
+      if (band) {
+        const up = pts.map((p) => `${X(p[0])},${Y(p[3])}`);
+        const lo = pts.slice().reverse().map((p) => `${X(p[0])},${Y(p[2])}`);
+        el("polygon", { points: [...up, ...lo].join(" "), fill: band, stroke: "none" }, svg);
+      }
+      el("polyline", { points: pts.map((p) => `${X(p[0])},${Y(p[1])}`).join(" "), fill: "none", stroke: color,
+        "stroke-width": width, "stroke-dasharray": dash || "none", "stroke-linejoin": "round", "stroke-linecap": "round" }, svg);
+    };
+    if (cmp) {
+      draw(cmp[which].vote, "var(--compare)", null, null, 1.5);
+      draw(cmp[which].opinion, "var(--compare)", null, "4 3", 1.5);
+    }
+    // ranges only for opinion: the 2016-vote line is the count plus projected
+    // population change, whose model-only range (about 1 point) would overstate
+    // how precisely that projection is known
+    draw(series.vote, "var(--vote)", null, null, 2.5);
+    draw(series.opinion, "var(--opinion)", "var(--opinion-band)", "6 4", 2.5);
+    for (const [pts, color] of [[series.vote, "var(--vote)"], [series.opinion, "var(--opinion)"]]) {
+      pts.forEach((p) => el("circle", { cx: X(p[0]), cy: Y(p[1]), r: 3.4, fill: color, stroke: "var(--surface)", "stroke-width": 1.2 }, svg));
+    }
+    // end labels
+    const lastV = series.vote[series.vote.length - 1], lastO = series.opinion[series.opinion.length - 1];
+    const ly = [Y(lastV[1]), Y(lastO[1])];
+    if (Math.abs(ly[0] - ly[1]) < 13) { const mid = (ly[0] + ly[1]) / 2; ly[0] = mid - 7; ly[1] = mid + 7; }
+    el("text", { x: X(2025) - 8, y: ly[0] - 8, "text-anchor": "end", style: "fill:var(--vote);font-weight:600" }, svg).textContent = fmt(lastV[1]) + "%";
+    el("text", { x: X(2025) - 8, y: ly[1] + 16, "text-anchor": "end", style: "fill:var(--opinion);font-weight:600" }, svg).textContent = fmt(lastO[1]) + "%";
+    // actual 2016
+    const ax = X(2016), ay = Y(g.actual2016), s = 5.5;
+    el("polygon", { points: `${ax},${ay - s} ${ax + s},${ay} ${ax},${ay + s} ${ax - s},${ay}`, fill: "var(--truth)", stroke: "var(--surface)", "stroke-width": 1.2 }, svg);
+  }
+  function domainFor(gs) {
+    let lo = 100, hi = 0;
+    for (const g of gs) {
+      if (!g) continue;
+      for (const w of ["restricted", "everyone"]) {
+        for (const p of g[w].vote) { lo = Math.min(lo, p[1]); hi = Math.max(hi, p[1]); }
+        for (const p of g[w].opinion) { lo = Math.min(lo, p[2]); hi = Math.max(hi, p[3]); }
+      }
+      lo = Math.min(lo, g.actual2016); hi = Math.max(hi, g.actual2016);
+    }
+    return [Math.max(0, Math.floor((lo - 2) / 10) * 10), Math.min(100, Math.ceil((hi + 2) / 10) * 10)];
+  }
+
+  // ---------- bridge (waterfall) ----------
+  function bridge(svg, g) {
+    svg.innerHTML = "";
+    const W = 520, H = 260, m = { l: 40, r: 10, t: 22, b: 40 };
+    const start = g.restricted.vote[0][1], end = g.everyone.opinion[3][1];
+    const steps = [["Exit", g.decomp.exit], ["Opinion", g.decomp.opinion], ["Entry", g.decomp.entry]];
+    const levels = [start];
+    steps.forEach(([, s]) => levels.push(levels[levels.length - 1] + s[0]));
+    const lo = Math.floor((Math.min(...levels, g.everyone.opinion[3][2]) - 6) / 10) * 10, hi = Math.ceil((Math.max(start, g.everyone.opinion[3][3]) + 6) / 10) * 10;
+    const Y = (v) => m.t + (hi - v) / (hi - lo) * (H - m.t - m.b);
+    const cols = ["2016", ...steps.map((s) => s[0]), "Today"];
+    const bw = (W - m.l - m.r) / cols.length, X = (i) => m.l + i * bw + bw * 0.18, wd = bw * 0.64;
+    for (let v = lo; v <= hi; v += 10) {
+      el("line", { x1: m.l, x2: W - m.r, y1: Y(v), y2: Y(v), stroke: "var(--grid)" }, svg);
+      el("text", { x: m.l - 6, y: Y(v) + 4, "text-anchor": "end" }, svg).textContent = v + "%";
+    }
+    const bar = (i, a, b, fill) => el("rect", { x: X(i), width: wd, y: Y(Math.max(a, b)), height: Math.max(1.5, Math.abs(Y(a) - Y(b))), fill, rx: 2 }, svg);
+    const errbar = (cx, y1, y2) => {
+      el("line", { x1: cx, x2: cx, y1, y2, stroke: "var(--ink)", "stroke-width": 1.2 }, svg);
+      [y1, y2].forEach((y) => el("line", { x1: cx - 4, x2: cx + 4, y1: y, y2: y, stroke: "var(--ink)", "stroke-width": 1.2 }, svg));
+    };
+    const label = (i, txt, y, color) => el("text", { x: X(i) + wd / 2, y, "text-anchor": "middle", style: `fill:${color};font-weight:600;font-size:12px` }, svg).textContent = txt;
+    bar(0, lo, start, "var(--vote)");
+    label(0, fmt(start, 1) + "%", Y(start) - 7, "var(--ink)");
+    steps.forEach(([name, s], k) => {
+      const a = levels[k], b = levels[k + 1], i = k + 1;
+      bar(i, a, b, s[0] < 0 ? "var(--down)" : "var(--up)").setAttribute("fill-opacity", "0.55");
+      // 90% range on the Opinion step only, drawn from the step's start
+      if (name === "Opinion") errbar(X(i) + wd / 2, Y(a + s[1]), Y(a + s[2]));
+      label(i, pp(s[0]), Y(Math.min(a, b, name === "Opinion" ? a + s[1] : b)) + 15, "var(--ink)");
+      if (k < steps.length - 1) el("line", { x1: X(i) + wd, x2: X(i + 1), y1: Y(b), y2: Y(b), stroke: "var(--muted)", "stroke-dasharray": "2 2" }, svg);
+    });
+    el("line", { x1: X(3) + wd, x2: X(4), y1: Y(levels[3]), y2: Y(levels[3]), stroke: "var(--muted)", "stroke-dasharray": "2 2" }, svg);
+    bar(4, lo, end, "var(--opinion)");
+    const endR = g.everyone.opinion[3];
+    errbar(X(4) + wd / 2, Y(endR[2]), Y(endR[3]));
+    label(4, fmt(end, 1) + "%", Y(endR[3]) - 7, "var(--ink)");
+    cols.forEach((c, i) => el("text", { x: X(i) + wd / 2, y: H - 20, "text-anchor": "middle", style: "fill:var(--ink);font-size:12px" }, svg).textContent = c);
+    el("text", { x: X(0) + wd / 2, y: H - 6, "text-anchor": "middle" }, svg).textContent = "Leave";
+    el("text", { x: X(4) + wd / 2, y: H - 6, "text-anchor": "middle" }, svg).textContent = "Stay out";
+  }
+
+  // ---------- table ----------
+  function table(it, g) {
+    const cols = [[it.kind === "national" ? "England and Wales" : g.name, g]];
+    if (it.kind === "area" || it.kind === "pcon") cols.push([g.region, D.regions[g.region]]);
+    if (it.kind !== "national") cols.push(["England and Wales", D.national]);
+    const rows = [["Exit", "exit"], ["Opinion", "opinion"], ["Entry", "entry"], ["Total", "total"]];
+    const ranged = new Set(["opinion", "total"]);
+    const cell = (s, k) => `<span class="num">${pp(s[0])}</span>` + (ranged.has(k) ? `<small class="num">${pp(s[1])} to ${pp(s[2])}</small>` : "");
+    $("tbl").innerHTML =
+      `<thead><tr><th></th>${cols.map((c) => `<th>${esc(c[0])}</th>`).join("")}</tr></thead><tbody>` +
+      rows.map(([lab, k]) => `<tr class="${k === "total" ? "total" : ""}"><td>${lab}</td>${cols.map((c) => `<td>${cell(c[1].decomp[k], k)}</td>`).join("")}</tr>`).join("") +
+      `</tbody>`;
+  }
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  // ---------- page ----------
+  function show(it) {
+    current = it;
+    const g = geo(it);
+    const cmp = comparison(it);
+    $("a-region").textContent = it.kind === "area" ? "Council \u00b7 " + g.region : it.kind === "pcon" ? "Constituency \u00b7 " + g.region
+      : it.kind === "region" ? "Region" : "England and Wales";
+    const partof = $("a-partof");
+    partof.hidden = it.kind !== "pcon";
+    if (it.kind === "pcon") {
+      const cs = g.councils;
+      partof.textContent = cs.length === 1 ? `Within ${cs[0].name}.`
+        : "Spans " + cs.map((c) => `${c.name} (${c.share}%)`).join(", ") + ".";
+    }
+    $("a-name").textContent = g.name;
+    const v16 = g.actual2016, now = g.everyone.opinion[3], keep = g.restricted.vote[2][1];
+    $("a-headline").innerHTML =
+      `In 2016, ${it.kind === "pcon" ? "an estimated " : ""}<b class="v num">${fmt(v16, 1)}%</b> in ${esc(g.name)} voted Leave. ` +
+      `Today an estimated <b class="o num">${fmt(now[1])}%</b> would vote to stay out ` +
+      `<span class="num" style="color:var(--muted);font-size:0.85em">(${fmt(now[2])}–${fmt(now[3])}%)</span>. ` +
+      `Had no one changed their mind, Leave among those who could vote in 2016 would now be about <b class="num">${fmt(keep)}%</b>.`;
+    const flagged = FLAGGED.has(it.key) || (it.kind === "pcon" && g.councils.some((c) => FLAGGED.has(c.code)));
+    $("a-flag").innerHTML = flagged
+      ? `<p class="flag">Provisional: a coding error swapped St Albans' and East Hertfordshire's 2011 census data. The data is corrected, but the 2016 model has not yet been re-estimated, so the change in opinion for these two councils${it.kind === "pcon" ? ", and for constituencies in them," : ""} may be off by a few points.</p>` : "";
+    const showCmp = cmp && cmp !== g;
+    $("cmp-key").hidden = !showCmp;
+    if (showCmp) $("cmp-key-label").textContent = cmp.name;
+    const dom = domainFor([g, showCmp ? cmp : null]);
+    trend($("chart-r"), g, showCmp ? cmp : null, "restricted", dom);
+    trend($("chart-e"), g, showCmp ? cmp : null, "everyone", dom);
+    bridge($("chart-w"), g);
+    table(it, g);
+    const nv = g.new_voters;
+    const bias = nv.share / 100 * YOUNG_SHIFT;
+    $("young-bias").textContent = `In ${g.name}, this may understate the blue estimate for 2025 by up to about ${fmt(bias, 1)} ${bias >= 0.95 && bias < 1.05 ? "point" : "points"}.`;
+    $("newvoters").innerHTML = `<span class="num">${fmt(nv.share)}%</span> of today's electorate were too young to vote in 2016. An estimated <b class="num">${fmt(nv.opinion[0])}%</b> of them would vote to stay out, against <span class="num">${fmt(nv.elig2016_opinion[0])}%</span> of those who could vote in 2016.`;
+  }
+
+  function fromHash() {
+    const h = (location.hash || "").slice(1);
+    if (!h) return null;
+    return index.find((it) => it.key === h || (it.kind === "region" && it.key.replace(/[^A-Za-z]/g, "") === h)) || null;
+  }
+
+  // ---------- wiring ----------
+  const q = $("q");
+  q.addEventListener("input", () => renderResults(search(q.value)));
+  q.addEventListener("keydown", (e) => {
+    const items = $("results").children;
+    if (e.key === "ArrowDown") { e.preventDefault(); setActive(active + 1); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); setActive(active - 1); }
+    else if (e.key === "Enter") {
+      const list = search(q.value);
+      if (list.length) { e.preventDefault(); choose(list[Math.max(0, active)]); }
+    } else if (e.key === "Escape") renderResults([]);
+  });
+  q.addEventListener("blur", () => setTimeout(() => renderResults([]), 100));
+  $("cmp").addEventListener("change", () => current && show(current));
+  window.addEventListener("hashchange", () => { const it = fromHash(); if (it) show(it); });
+
+  fetch("data/lookup.json").then((r) => r.json()).then((data) => {
+    D = data;
+    buildIndex();
+    const chips = $("chips");
+    EXAMPLES.forEach((name) => {
+      const it = index.find((x) => (x.kind === "area" || x.kind === "pcon") && x.name === name);
+      if (!it) return;
+      const b = document.createElement("button");
+      b.type = "button"; b.textContent = name;
+      b.addEventListener("click", () => choose(it));
+      chips.appendChild(b);
+    });
+    const nat = index[0];
+    const b = document.createElement("button");
+    b.type = "button"; b.textContent = "England and Wales";
+    b.addEventListener("click", () => choose(nat));
+    chips.appendChild(b);
+    $("built").textContent = "Estimates built " + D.meta.built + ".";
+    show(fromHash() || index.find((x) => x.name === "Wakefield") || nat);
+  }).catch(() => {
+    $("a-region").textContent = "";
+    $("a-headline").textContent = "The data file could not be loaded. Reload the page to try again.";
+  });
+})();
+</script>
