@@ -3,11 +3,12 @@
 <meta charset="utf-8">
 <title>Replacement Tracker</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>if (/[?&]embed=1(&|$)/.test(location.search)) document.documentElement.classList.add("embed");</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400..700&display=swap">
 <style>
-/* Layout: one reading column; search on top, the area's two trend charts side by side, then the bridge from 2016 to today */
+/* Layout: one reading column; search on top, the area's two trend charts side by side (stacked below 760px), then the bridge from 2016 to today */
 /* Palette, font and square corners follow persuasionuk.org, which is light only */
 :root {
   color-scheme: light;
@@ -33,6 +34,10 @@
 }
 body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.55; }
 .wrap { max-width: 940px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 56px; display: grid; gap: 28px; }
+/* embedded in persuasionuk.org's 768px column (?embed=1): the host page supplies the title, introduction and side margins */
+.embed body { margin: 0; }
+.embed .wrap { max-width: none; padding: 4px 0 24px; }
+.embed .wrap > header { display: none; }
 h1, h2, h3 { font-family: var(--f-display); font-weight: 500; letter-spacing: -0.025em; text-wrap: balance; margin: 0; }
 h1 { font-size: clamp(30px, 4.5vw, 44px); line-height: 1.05; color: var(--brand); }
 h2 { font-size: 24px; line-height: 1.15; }
@@ -85,6 +90,8 @@ p { margin: 0; }
 
 /* charts */
 .charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+/* stacked below 760px: side by side there, each chart's text would shrink to phone size */
+@media (max-width: 760px) { .charts { grid-template-columns: 1fr; } }
 .panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 0; padding: 16px; display: grid; gap: 8px; min-width: 0; }
 .panel p { font-size: 13px; color: var(--muted); }
 svg { display: block; width: 100%; height: auto; overflow: visible; }
@@ -299,10 +306,11 @@ tr.total td { font-weight: 600; border-bottom: none; }
     show(it);
     try { history.replaceState(null, "", hashFor(it)); } catch (e) {}
   }
-  // copy the shown area's link; where the clipboard is blocked, show it to copy by hand
+  // copy the shown area's link; where the clipboard is blocked, show it to copy by hand.
+  // The query is dropped, so a link copied from the embed opens the full page.
   function copyLink() {
     if (!current) return;
-    const url = location.href.split("#")[0] + hashFor(current), b = $("copy-link");
+    const url = location.origin + location.pathname + hashFor(current), b = $("copy-link");
     const done = () => { b.textContent = "Link copied"; setTimeout(() => (b.textContent = "Copy link"), 2000); };
     (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject())
       .then(done, () => window.prompt("Copy this link:", url));
