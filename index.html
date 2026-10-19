@@ -1,99 +1,115 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
 <title>Replacement Tracker</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,650&family=Public+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400..700&display=swap">
 <style>
 /* Layout: one reading column; search on top, the area's two trend charts side by side, then the bridge from 2016 to today */
+/* Palette, font and square corners follow persuasionuk.org, which is light only */
 :root {
-  --bg: #f4f6f9;
+  color-scheme: light;
+  --bg: #f3f2e9;
   --surface: #ffffff;
-  --ink: #16213a;
-  --muted: #5a6479;
-  --rule: #d8dde6;
-  --grid: #e7eaf0;
-  --vote: #1d3566;
-  --vote-band: rgba(29, 53, 102, 0.14);
+  --ink: #111928;
+  --muted: #48505d;
+  --rule: #d4d3cb;
+  --grid: #e8e8e3;
+  --brand: #060c72;
+  --accent: #e1ccff;
+  --vote: #060c72;
+  --vote-band: rgba(6, 12, 114, 0.14);
   --opinion: #b97610;
   --opinion-band: rgba(201, 135, 31, 0.20);
   --truth: #2f6f6a;
   --compare: #9aa3b5;
-  --down: #1d3566;
+  --down: #060c72;
   --up: #b5452c;
-  --focus: #2f6f6a;
-  --f-display: "Literata", Georgia, "Times New Roman", serif;
-  --f-body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0f141d; --surface: #171e2b; --ink: #e5e9f0; --muted: #9ba5b8; --rule: #2b3445; --grid: #222b3a;
-    --vote: #93b2ea; --vote-band: rgba(147, 178, 234, 0.16); --opinion: #e5aa52; --opinion-band: rgba(229, 170, 82, 0.18);
-    --truth: #63b8ae; --compare: #5d677b; --down: #93b2ea; --up: #e4806a; --focus: #63b8ae; color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #0f141d; --surface: #171e2b; --ink: #e5e9f0; --muted: #9ba5b8; --rule: #2b3445; --grid: #222b3a;
-  --vote: #93b2ea; --vote-band: rgba(147, 178, 234, 0.16); --opinion: #e5aa52; --opinion-band: rgba(229, 170, 82, 0.18);
-  --truth: #63b8ae; --compare: #5d677b; --down: #93b2ea; --up: #e4806a; --focus: #63b8ae; color-scheme: dark;
+  --focus: #060c72;
+  --f-display: "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-body: "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.55; }
-.wrap { max-width: 1040px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 56px; display: grid; gap: 28px; }
-h1, h2, h3 { font-family: var(--f-display); font-weight: 650; text-wrap: balance; margin: 0; }
-h1 { font-size: clamp(26px, 4vw, 36px); letter-spacing: -0.01em; }
-h2 { font-size: 22px; }
-h3 { font-size: 16px; font-family: var(--f-body); font-weight: 600; }
-p { margin: 0; max-width: 66ch; }
+.wrap { max-width: 940px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 56px; display: grid; gap: 28px; }
+h1, h2, h3 { font-family: var(--f-display); font-weight: 500; letter-spacing: -0.025em; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(30px, 4.5vw, 44px); line-height: 1.05; color: var(--brand); }
+h2 { font-size: 24px; line-height: 1.15; }
+h3 { font-size: 16px; font-family: var(--f-body); font-weight: 600; letter-spacing: 0; }
+p { margin: 0; }
 .eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
-.lede { color: var(--muted); font-size: 16px; }
+.lede { color: var(--muted); font-size: 17px; }
 .num { font-variant-numeric: tabular-nums; }
 
 /* search */
-.search { position: relative; max-width: 520px; display: grid; gap: 8px; }
+.search { display: grid; gap: 8px; }
+.field { position: relative; max-width: 520px; }
 .search label { font-weight: 600; font-size: 14px; }
 .search input {
-  font: inherit; font-size: 17px; padding: 12px 14px; border-radius: 8px; border: 1px solid var(--rule);
+  font: inherit; font-size: 17px; padding: 12px 14px; border-radius: 0; border: 1px solid var(--rule);
   background: var(--surface); color: var(--ink); width: 100%; box-sizing: border-box;
 }
 .search input:focus { outline: 2px solid var(--focus); outline-offset: 1px; }
 .results {
   position: absolute; top: 100%; left: 0; right: 0; z-index: 5; margin: 4px 0 0; padding: 4px; list-style: none;
-  background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 0; box-shadow: 0 8px 24px rgba(0,0,0,0.12);
   max-height: 320px; overflow-y: auto;
 }
-.results li { padding: 8px 10px; border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; gap: 12px; }
+.results li { padding: 8px 10px; cursor: pointer; display: flex; justify-content: space-between; gap: 12px; }
 .results li small { color: var(--muted); }
 .results li[aria-selected="true"], .results li:hover { background: var(--grid); }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; font-size: 13px; color: var(--muted); align-items: center; }
 .chips button {
-  font: inherit; font-size: 13px; color: var(--ink); background: transparent; border: 1px solid var(--rule);
-  border-radius: 999px; padding: 3px 10px; cursor: pointer;
+  font: inherit; font-size: 13px; font-weight: 500; color: var(--brand); background: var(--accent); border: 0;
+  padding: 4px 10px; cursor: pointer; transition: background-color 0.2s, color 0.2s;
 }
-.chips button:hover { border-color: var(--muted); }
+.chips button:hover { background: var(--brand); color: #ffffff; }
 .chips button:focus-visible { outline: 2px solid var(--focus); }
 
 /* area summary */
 .area { display: grid; gap: 10px; border-top: 1px solid var(--rule); padding-top: 24px; }
-.headline { font-family: var(--f-display); font-size: clamp(19px, 2.4vw, 23px); line-height: 1.4; font-weight: 500; max-width: 46ch; }
-.headline b { font-weight: 650; }
+.area .eyebrow { font-size: 13px; color: var(--brand); }
+.area h2 { font-size: clamp(26px, 3.4vw, 32px); line-height: 1.1; }
+.name-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+.copy {
+  font: inherit; font-size: 13px; font-weight: 500; color: var(--brand); background: transparent;
+  border: 1px solid var(--brand); padding: 4px 10px; cursor: pointer; transition: background-color 0.2s, color 0.2s;
+}
+.copy:hover { background: var(--brand); color: #ffffff; }
+.copy:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }.headline { font-family: var(--f-display); font-size: clamp(19px, 2.4vw, 23px); line-height: 1.4; font-weight: 400;
+  background: var(--surface); border: 1px solid var(--rule); border-left: 4px solid var(--brand); padding: 18px 22px; margin-top: 6px; }
+.headline b { font-weight: 600; }
 .partof { font-size: 14px; color: var(--muted); }
 .headline .v { color: var(--vote); } .headline .o { color: var(--opinion); }
 
 /* charts */
 .charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-.panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 16px; display: grid; gap: 8px; min-width: 0; }
+.panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 0; padding: 16px; display: grid; gap: 8px; min-width: 0; }
 .panel p { font-size: 13px; color: var(--muted); }
 svg { display: block; width: 100%; height: auto; overflow: visible; }
 svg text { fill: var(--muted); font-family: var(--f-body); font-size: 11px; }
-.howto p { font-size: 14px; color: var(--muted); max-width: 80ch; }
-.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; }
-.legend span { display: inline-flex; align-items: center; gap: 6px; }
-.key-line { width: 22px; height: 0; border-top: 2.5px solid var(--vote); }
-.key-line.o { border-top: 2.5px dashed var(--opinion); }
-.key-line.c { border-top: 1.5px solid var(--compare); }
-.key-band { width: 16px; height: 10px; background: var(--opinion-band); border-radius: 2px; }
-.key-dia { width: 9px; height: 9px; background: var(--truth); transform: rotate(45deg); }
-.toggle { font-size: 13px; display: inline-flex; gap: 6px; align-items: center; color: var(--muted); }
-.toggle select { font: inherit; font-size: 13px; color: var(--ink); background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 2px 6px; }
+.howto p { font-size: 15px; color: var(--muted); }
+/* legend: one group per theme (2016 vote, opinion today, comparison), each wrapping as a unit */
+.legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px 24px; font-size: 14px; }
+.lg { display: grid; gap: 6px; align-content: start; }
+.lg b { font-weight: 600; }
+.lg > span { display: inline-flex; align-items: center; gap: 10px; color: var(--muted); }
+.lg i { flex: none; }
+.key-line { width: 30px; height: 0; border-top: 3px solid var(--vote); }
+.key-line.o { border-top: 3px dashed var(--opinion); }
+.key-line.c { border-top: 2px solid var(--compare); }
+.key-line.c.d { border-top-style: dashed; }
+.key-band { width: 30px; height: 12px; background: var(--opinion-band); }
+.key-dia { width: 10px; height: 10px; margin-inline: 10px; background: var(--truth); transform: rotate(45deg); }
+[hidden] { display: none !important; }
+.compare { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; font-size: 13px; color: var(--muted); }
+/* separate buttons rather than one segmented box, so they wrap cleanly on phones */
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg button { font: inherit; font-size: 13px; color: var(--ink); background: var(--surface); border: 1px solid var(--rule); padding: 5px 12px; cursor: pointer; }
+.seg button:hover { border-color: var(--brand); }
+.seg button[aria-pressed="true"] { background: var(--brand); border-color: var(--brand); color: #ffffff; }
+.seg button:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
 
 /* bridge */
 .bridge { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 20px; align-items: start; }
@@ -110,9 +126,12 @@ th:first-child, td:first-child { text-align: left; }
 thead th { font-size: 11px; color: var(--muted); font-weight: 600; letter-spacing: 0.02em; line-height: 1.3; white-space: normal; vertical-align: bottom; overflow-wrap: anywhere; border-bottom: 1px solid var(--rule); }
 td small { color: var(--muted); font-size: 10.5px; display: block; }
 tr.total td { font-weight: 600; border-bottom: none; }
-.notes { border-top: 1px solid var(--rule); padding-top: 20px; display: grid; gap: 10px; font-size: 13.5px; color: var(--muted); }
-.notes p { max-width: 80ch; }
-.flag { border: 1px solid var(--up); color: var(--ink); border-radius: 8px; padding: 10px 12px; font-size: 13.5px; }
+/* notes in two columns on wide screens, lining up with the two trend charts */
+.notes { border-top: 1px solid var(--rule); padding-top: 20px; font-size: 13.5px; color: var(--muted); }
+.notes h3 { margin-bottom: 10px; }
+.notes p { margin-bottom: 10px; break-inside: avoid; }
+@media (min-width: 760px) { .notes { columns: 2; column-gap: 20px; } .notes h3 { column-span: all; } }
+.flag { border-left: 3px solid var(--up); background: var(--surface); color: var(--ink); padding: 10px 12px; font-size: 13.5px; }
 @media (prefers-reduced-motion: no-preference) { .area { transition: opacity 0.2s; } }
 </style>
 
@@ -125,35 +144,43 @@ tr.total td { font-weight: 600; border-bottom: none; }
 
   <div class="search">
     <label for="q">Find a council or constituency</label>
-    <input id="q" type="search" autocomplete="off" placeholder="Type a council or constituency, e.g. Wakefield" role="combobox" aria-expanded="false" aria-controls="results" aria-autocomplete="list">
-    <ul id="results" class="results" role="listbox" hidden></ul>
+    <div class="field">
+      <input id="q" type="search" autocomplete="off" placeholder="Type a council or constituency, e.g. Wakefield" role="combobox" aria-expanded="false" aria-controls="results" aria-autocomplete="list">
+      <ul id="results" class="results" role="listbox" hidden></ul>
+    </div>
     <div class="chips" id="chips"><span>Try</span></div>
   </div>
 
   <section class="area" id="area" aria-live="polite">
     <div class="eyebrow" id="a-region">Loading</div>
-    <h2 id="a-name">&nbsp;</h2>
+    <div class="name-row"><h2 id="a-name">&nbsp;</h2><button type="button" class="copy" id="copy-link">Copy link</button></div>
     <p class="partof" id="a-partof" hidden></p>
     <p class="headline" id="a-headline"></p>
     <div id="a-flag"></div>
   </section>
 
   <section style="display:grid; gap:12px">
-    <div style="display:flex; flex-wrap:wrap; gap:10px 24px; align-items:center; justify-content:space-between">
-      <div class="legend">
-        <span><i class="key-line"></i>2016 model: how people voted (Leave)</span>
-        <span><i class="key-line o"></i>Current model: what people think today (stay out)</span>
-        <span><i class="key-band"></i>90% range for today's opinion</span>
-        <span><i class="key-dia"></i>Official 2016 result</span>
-        <span id="cmp-key"><i class="key-line c"></i><span id="cmp-key-label">England and Wales</span></span>
-      </div>
-      <label class="toggle" for="cmp">Compare with
-        <select id="cmp"><option value="region">its region</option><option value="national" selected>England and Wales</option><option value="none">nothing</option></select>
-      </label>
-    </div>
     <div class="howto">
-      <p>Both lines show predicted shares among decided voters. Along each line, the prediction for any given kind of voter stays the same, so the line moves only because the electorate changes: older voters leaving it, younger ones joining, people moving area or leaving the UK, and changes in circumstances such as buying a home. The gap between the two lines is persuasion: the same people, in the same year, giving a different answer.</p>
+      <p>Both lines show predicted shares among decided voters. Along each line, the prediction for any given kind of voter stays the same, so the line moves only because the electorate changes: older voters leaving it, younger ones joining, people moving area or leaving the UK, and changes in circumstances such as buying a home. The gap between the two lines is persuasion: the same people giving a different answer today than in 2016.</p>
     </div>
+    <div class="legend">
+      <div class="lg">
+        <b>How people voted in 2016</b>
+        <span><i class="key-line"></i>Model estimate, Leave</span>
+        <span><i class="key-dia"></i>Official result</span>
+      </div>
+      <div class="lg">
+        <b>What people think today</b>
+        <span><i class="key-line o"></i>Model estimate, stay out</span>
+        <span><i class="key-band"></i>90% range</span>
+      </div>
+      <div class="lg" id="cmp-key">
+        <b>Compared with <span id="cmp-key-label">England and Wales</span></b>
+        <span><i class="key-line c"></i>2016 vote</span>
+        <span><i class="key-line c d"></i>Opinion today</span>
+      </div>
+    </div>
+    <div class="compare" id="cmp-row"><span>Compare with</span><div class="seg" id="cmp" role="group" aria-label="Compare with"></div></div>
     <div class="charts">
       <div class="panel">
         <h3>Restricted: people who could vote in 2016</h3>
@@ -161,7 +188,7 @@ tr.total td { font-weight: 600; border-bottom: none; }
         <svg id="chart-r" viewBox="0 0 440 280" role="img" aria-label="Trend chart, people eligible in 2016"></svg>
       </div>
       <div class="panel">
-        <h3>Everyone: all adults in the year shown</h3>
+        <h3>Everyone: all adults who could vote in the year shown</h3>
         <p>Since young people who came of age after 2016 could not vote in the referendum, the 2016 prediction model cannot tell us how they would have voted. Instead, we use their predicted current opinion for both lines. <span id="young-bias"></span></p>
         <svg id="chart-e" viewBox="0 0 440 280" role="img" aria-label="Trend chart, everyone eligible"></svg>
       </div>
@@ -174,8 +201,8 @@ tr.total td { font-weight: 600; border-bottom: none; }
       <div class="panel">
         <svg id="chart-w" viewBox="0 0 520 260" role="img" aria-label="Change from 2016 to today, in three steps"></svg>
         <div class="terms">
-          <div class="term"><b>Exit</b><span>Changes among people who could vote in 2016, at their 2016 opinions: mostly deaths, plus people moving area or leaving the UK and changes in their circumstances.</span></div>
-          <div class="term"><b>Opinion</b><span>Persuasion: the same people today, giving a different answer.</span></div>
+          <div class="term"><b>Exit</b><span>How the 2016 electorate has changed, with opinions held at 2016: mostly deaths, but also people moving and changes in their circumstances.</span></div>
+          <div class="term"><b>Opinion</b><span>Persuasion: the same people giving a different answer today than in 2016.</span></div>
           <div class="term"><b>Entry</b><span>Young people who have turned 18 since 2016.</span></div>
         </div>
       </div>
@@ -192,10 +219,9 @@ tr.total td { font-weight: 600; border-bottom: none; }
     <p>These are model estimates, not counts. We combine two large surveys of the same panel of voters (the British Election Study, just after the 2016 referendum and in May to June 2026) with population tables for each council built from the 2011 and 2021 censuses and the ONS mid-year estimates for 2016 and 2025. The 2016 model predicts how people voted; the current model predicts how they would vote in a referendum on rejoining the EU.</p>
     <p>All shares are among decided voters. Including 2016 non-voters and today's undecided would lower them, but survey respondents tend not to admit they didn't vote, so the survey's non-voter share is far too low to model reliably.</p>
     <p>Every area is anchored to its actual 2016 result. Our model's own 2016 estimate for a council can miss the count by several points, so we shift each area's figures until its 2016 estimate matches the real result, and carry the same shift forward. The later figures are therefore the 2016 count plus our estimated changes. This assumes that whatever made the model miss an area in 2016 still applies today.</p>
-    <p>Constituencies (2024 boundaries) are estimated from each constituency's own make-up in the 2021 census, through the same models. There are no constituency population figures for 2016 or 2025, so each constituency moves between 2016, 2021 and 2025 as its council does (or its councils, weighted by population). Two constituencies in the same council therefore have the same exit effect, but their opinion change and the effect of new voters reflect their own demographics. A constituency's share of new voters comes from its own share of 18 to 26 year olds in 2021, so seats with many students keep a high share every year. Constituencies are anchored to Chris Hanretty's estimates of the 2016 result, since official results were counted by council, not by constituency.</p>
+    <p>Constituencies (2024 boundaries) are estimated from their own make-up in the 2021 census. There are no constituency population figures for 2016 or 2025, so population change follows the constituency's council (or councils), while opinion change and new voters reflect the constituency's own demographics. Since the referendum was counted by council, constituencies are anchored to Chris Hanretty's estimates of the 2016 result.</p>
     <p>Ranges show the uncertainty in today's opinion: 90% credible intervals from the model. The other figures are the actual 2016 result and projections of how the population has changed, which we show without a range. The model's own range for them is about a point, but that leaves out errors in the population tables. Regional and national figures are much more reliable than those for single councils.</p>
-    <p>Sources: Electoral Commission, ONS Census 2011 and 2021, ONS mid-year population estimates, Annual Population Survey, British Election Study Internet Panel. <span id="built"></span></p>
-  </section>
+    <p>Sources: Electoral Commission, ONS Census 2011 and 2021, ONS mid-year population estimates, Annual Population Survey, British Election Study Internet Panel. <span id="built"></span></p>  </section>
 </div>
 
 <script>
@@ -265,11 +291,21 @@ tr.total td { font-weight: 600; border-bottom: none; }
     $("q").setAttribute("aria-activedescendant", items[active].id);
     items[active].scrollIntoView({ block: "nearest" });
   }
+  // an area's link: its code, or a region's name without spaces
+  const hashFor = (it) => "#" + (it.kind === "region" ? it.key.replace(/[^A-Za-z]/g, "") : it.key);
   function choose(it) {
     $("q").value = "";
     renderResults([]);
     show(it);
-    try { history.replaceState(null, "", "#" + (it.kind === "region" ? it.key.replace(/[^A-Za-z]/g, "") : it.key)); } catch (e) {}
+    try { history.replaceState(null, "", hashFor(it)); } catch (e) {}
+  }
+  // copy the shown area's link; where the clipboard is blocked, show it to copy by hand
+  function copyLink() {
+    if (!current) return;
+    const url = location.href.split("#")[0] + hashFor(current), b = $("copy-link");
+    const done = () => { b.textContent = "Link copied"; setTimeout(() => (b.textContent = "Copy link"), 2000); };
+    (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject())
+      .then(done, () => window.prompt("Copy this link:", url));
   }
 
   // ---------- data access ----------
@@ -279,12 +315,35 @@ tr.total td { font-weight: 600; border-bottom: none; }
     if (it.kind === "pcon") return D.constituencies.find((c) => c.code === it.key);
     return D.areas.find((a) => a.code === it.key);
   }
+  // ---------- comparison ----------
+  // only the comparisons that make sense for the area shown; a region page has
+  // no "its region" and falls back to England and Wales, keeping the choice
+  // for the next council or constituency
+  let cmpMode = "national";
+  function cmpOptions(it) {
+    if (it.kind === "national") return [];
+    const opts = [];
+    if (it.kind === "area" || it.kind === "pcon") opts.push(["region", geo(it).region]);
+    opts.push(["national", "England and Wales"], ["none", "None"]);
+    return opts;
+  }
+  const cmpActive = (it) => cmpOptions(it).some((o) => o[0] === cmpMode) ? cmpMode : "national";
   function comparison(it) {
-    const mode = $("cmp").value;
-    if (mode === "none") return null;
-    if (mode === "region" && (it.kind === "area" || it.kind === "pcon")) return D.regions[geo(it).region];
     if (it.kind === "national") return null;
-    return D.national;
+    const mode = cmpActive(it);
+    return mode === "none" ? null : mode === "region" ? D.regions[geo(it).region] : D.national;
+  }
+  function renderCompare(it) {
+    const opts = cmpOptions(it), active = cmpActive(it), box = $("cmp");
+    $("cmp-row").hidden = !opts.length;
+    box.innerHTML = "";
+    opts.forEach(([mode, label]) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.textContent = label;
+      b.setAttribute("aria-pressed", String(mode === active));
+      b.addEventListener("click", () => { cmpMode = mode; show(current); });
+      box.appendChild(b);
+    });
   }
 
   // ---------- trend chart ----------
@@ -409,6 +468,7 @@ tr.total td { font-weight: 600; border-bottom: none; }
     current = it;
     const g = geo(it);
     const cmp = comparison(it);
+    renderCompare(it);
     $("a-region").textContent = it.kind === "area" ? "Council \u00b7 " + g.region : it.kind === "pcon" ? "Constituency \u00b7 " + g.region
       : it.kind === "region" ? "Region" : "England and Wales";
     const partof = $("a-partof");
@@ -461,7 +521,7 @@ tr.total td { font-weight: 600; border-bottom: none; }
     } else if (e.key === "Escape") renderResults([]);
   });
   q.addEventListener("blur", () => setTimeout(() => renderResults([]), 100));
-  $("cmp").addEventListener("change", () => current && show(current));
+  $("copy-link").addEventListener("click", copyLink);
   window.addEventListener("hashchange", () => { const it = fromHash(); if (it) show(it); });
 
   fetch("data/lookup.json").then((r) => r.json()).then((data) => {
