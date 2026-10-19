@@ -512,7 +512,7 @@ tr.total td { font-weight: 600; border-bottom: none; }
       `a fall of <span class="num">${fmt(-dc.total[0], 1)}</span> points:</p><ul class="steps">` +
       step("Exit", dc.exit, `The 2016 electorate has changed, mostly through deaths. Had no one changed their mind, Leave would now be about <b class="num">${fmt(keep)}%</b>.`) +
       step("Opinion", dc.opinion, `People who could vote in 2016 giving a different answer today. <small class="num">90% range: ${pp(dc.opinion[1])} to ${pp(dc.opinion[2])}</small>`) +
-      step("Entry", dc.entry, `Young people who have come of age since 2016 are <b class="num">${fmt(nv.share)}%</b> of today's electorate. An estimated <b class="num">${fmt(nv.opinion[0])}%</b> of them would vote to stay out, against <span class="num">${fmt(nv.elig2016_opinion[0])}%</span> among the other <span class="num">${100 - Number(fmt(nv.share))}%</span> of the electorate that could already vote in 2016.`) +
+      step("Entry", dc.entry, `Young people who have come of age since 2016 are <b class="num">${fmt(nv.share)}%</b> of today's electorate. An estimated <b class="num">${fmt(nv.opinion[0])}%</b> of them would vote to stay out, against <span class="num">${fmt(nv.elig2016_opinion[0])}%</span> among the surviving 2016 electorate. That pushes down stay-out by a further <span class="num">${fmt(-dc.entry[0], 1)}</span> percentage points.`) +
       `</ul>`;
     const flagged = FLAGGED.has(it.key) || (it.kind === "pcon" && g.councils.some((c) => FLAGGED.has(c.code)));
     $("a-flag").innerHTML = flagged
