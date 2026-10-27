@@ -151,7 +151,6 @@ tr.total td { font-weight: 600; border-bottom: none; }
 .notes h3 { margin-bottom: 10px; }
 .notes p { margin-bottom: 10px; break-inside: avoid; }
 @media (min-width: 760px) { .notes { columns: 2; column-gap: 20px; } .notes h3 { column-span: all; } }
-.flag { border-left: 3px solid var(--up); background: var(--surface); color: var(--ink); padding: 10px 12px; font-size: 13.5px; }
 @media (prefers-reduced-motion: no-preference) { .area { transition: opacity 0.2s; } }
 </style>
 
@@ -176,7 +175,6 @@ tr.total td { font-weight: 600; border-bottom: none; }
     <div class="name-row"><h2 id="a-name">&nbsp;</h2><button type="button" class="copy" id="copy-link">Copy link</button></div>
     <p class="partof" id="a-partof" hidden></p>
     <div class="headline" id="a-headline"></div>
-    <div id="a-flag"></div>
   </section>
 
   <section style="display:grid; gap:14px">
@@ -248,7 +246,6 @@ tr.total td { font-weight: 600; border-bottom: none; }
 (() => {
   const $ = (id) => document.getElementById(id);
   const NS = "http://www.w3.org/2000/svg";
-  const FLAGGED = new Set(["E07000240", "E07000242"]);
   // the youngest 2016 voters have moved about 8 points towards Rejoin since
   // 2016 (BES); new voters would likely have moved as much, so using their
   // current opinion on the blue line understates it by about their share of
@@ -517,9 +514,6 @@ tr.total td { font-weight: 600; border-bottom: none; }
       step("Opinion", dc.opinion, `People who could vote in 2016 giving a different answer today. <small class="num">90% range: ${pp(dc.opinion[1])} to ${pp(dc.opinion[2])}</small>`) +
       step("Entry", dc.entry, `Young people who have come of age since 2016 are <b class="num">${fmt(nv.share)}%</b> of today's electorate. An estimated <b class="num">${fmt(nv.opinion[0])}%</b> of them would vote to stay out, against <span class="num">${fmt(nv.elig2016_opinion[0])}%</span> among the surviving 2016 electorate. That pushes down stay-out by a further <span class="num">${fmt(-dc.entry[0], 1)}</span> percentage points.`) +
       `</ul>`;
-    const flagged = FLAGGED.has(it.key) || (it.kind === "pcon" && g.councils.some((c) => FLAGGED.has(c.code)));
-    $("a-flag").innerHTML = flagged
-      ? `<p class="flag">Provisional: a coding error swapped St Albans' and East Hertfordshire's 2011 census data. The data is corrected, but the 2016 model has not yet been re-estimated, so the change in opinion for these two councils${it.kind === "pcon" ? ", and for constituencies in them," : ""} may be off by a few points.</p>` : "";
     const showCmp = cmp && cmp !== g;
     $("cmp-key").hidden = !showCmp;
     if (showCmp) $("cmp-key-label").textContent = cmp.name;
